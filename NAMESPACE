@@ -1,0 +1,5 @@
+useDynLib(sparseHC)
+import(RcppEigen)
+import(BH)
+importFrom(Rcpp, evalCpp)
+exportPattern("^[[:alpha:]]+")
