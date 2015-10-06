@@ -9,6 +9,6 @@ Description: Provides agglomerative hierarchical clustering which accept sparse 
 Depends: R (>= 2.14), BH, RcppEigen, Matrix
 URL: https://github.com/khabbazian/
 Suggests: knitr, testthat, rmarkdown
-License: GPL (>= 2) 
+License: GPL (>= 3) 
 Imports: Rcpp (>= 0.11.6), RcppEigen (>= 0.3.2.5.0)
 LinkingTo: Rcpp, RcppEigen, BH
