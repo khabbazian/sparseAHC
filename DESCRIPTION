@@ -1,7 +1,7 @@
 Package: sparseHC
 Type: Package
 Title: Agglomerative Hierarchical Clustering for sparse similarity matrices 
-Version: 1.0
+Version: 1.1
 Date: 2015-08-04
 Author: Mohammad Khabbazian
 Maintainer: Mohammad Khabbazian <khabbazian@wisc.edu>
