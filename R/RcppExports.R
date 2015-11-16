@@ -2,7 +2,8 @@
 #'
 #'@param S sparse similarity matrix 
 #'@param linkage is c(average, single, complete) 
-#'@param noOrder if TRUE does not retun the order of points which is required for plotting dendrogram to save memory and time
+#'@param check.symmetry logical. If TRUE, checks if the input similarity matrix is symmetric. 
+#'@param noOrder logical. If TRUE, does not return the order of points which is required for plotting dendrogram to save memory and time
 #'
 #'@return hclust object
 #'
@@ -23,11 +24,12 @@
 #'plot(H);
 #' 
 #'@export
-sparseHC <- function(S, linkage=c("average", "single", "complete"), noOrder = FALSE) {
+sparseHC <- function(S, linkage=c("average", "single", "complete"), check.symmetry=TRUE, noOrder = FALSE) {
     
     linkage = match.arg(linkage);
+    if(!isSymmetric(S)) stop("the input similarity matrix has to be symmetric")
     if( !is(S, "dgCMatrix") ){
-        warning(paste0("Input matrix type was ", class(S), " I changed it to dgcMatrix"));
+        warning(paste0("Input matrix type changed from ", class(S), " to dgCMatrix"));
         S  <-  as(S, "dgCMatrix");
     }
     stopifnot( is(S, "dgCMatrix") )
