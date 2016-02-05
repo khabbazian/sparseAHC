@@ -1,4 +1,4 @@
-Package: sparseHC
+Package: sparseAHC
 Type: Package
 Title: Agglomerative Hierarchical Clustering for sparse similarity matrices 
 Version: 1.1

@@ -6,16 +6,16 @@
 
 using namespace Rcpp;
 
-// run_sparseHC
-Rcpp::List run_sparseHC(Eigen::SparseMatrix<double> S, Rcpp::CharacterVector method, bool noOrder);
-RcppExport SEXP sparseHC_run_sparseHC(SEXP SSEXP, SEXP methodSEXP, SEXP noOrderSEXP) {
+// run_sparseAHC
+Rcpp::List run_sparseAHC(Eigen::SparseMatrix<double> S, Rcpp::CharacterVector method, bool noOrder);
+RcppExport SEXP sparseAHC_run_sparseAHC(SEXP SSEXP, SEXP methodSEXP, SEXP noOrderSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< Eigen::SparseMatrix<double> >::type S(SSEXP);
     Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type method(methodSEXP);
     Rcpp::traits::input_parameter< bool >::type noOrder(noOrderSEXP);
-    __result = Rcpp::wrap(run_sparseHC(S, method, noOrder));
+    __result = Rcpp::wrap(run_sparseAHC(S, method, noOrder));
     return __result;
 END_RCPP
 }
