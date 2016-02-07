@@ -5,6 +5,9 @@ require(devtools)
 install_github("khabbazian/sparseAHC")
 require(sparseAHC)
 ```
+
+[SparseAHC Manual](http://homepages.cae.wisc.edu/~khabbazian/pdfs/sparseAHC.pdf)
+
 ### License
 
 This package is free software; you can redistribute it and/or modify it
