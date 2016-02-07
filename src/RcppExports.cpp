@@ -6,16 +6,27 @@
 
 using namespace Rcpp;
 
+// dgCIsSymmetric
+bool dgCIsSymmetric(Eigen::SparseMatrix<double> S, double eps);
+RcppExport SEXP sparseAHC_dgCIsSymmetric(SEXP SSEXP, SEXP epsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< Eigen::SparseMatrix<double> >::type S(SSEXP);
+    Rcpp::traits::input_parameter< double >::type eps(epsSEXP);
+    __result = Rcpp::wrap(dgCIsSymmetric(S, eps));
+    return __result;
+END_RCPP
+}
 // run_sparseAHC
-Rcpp::List run_sparseAHC(Eigen::SparseMatrix<double> S, Rcpp::CharacterVector method, bool noOrder);
-RcppExport SEXP sparseAHC_run_sparseAHC(SEXP SSEXP, SEXP methodSEXP, SEXP noOrderSEXP) {
+Rcpp::List run_sparseAHC(Eigen::SparseMatrix<double> S, Rcpp::CharacterVector method);
+RcppExport SEXP sparseAHC_run_sparseAHC(SEXP SSEXP, SEXP methodSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< Eigen::SparseMatrix<double> >::type S(SSEXP);
     Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type method(methodSEXP);
-    Rcpp::traits::input_parameter< bool >::type noOrder(noOrderSEXP);
-    __result = Rcpp::wrap(run_sparseAHC(S, method, noOrder));
+    __result = Rcpp::wrap(run_sparseAHC(S, method));
     return __result;
 END_RCPP
 }

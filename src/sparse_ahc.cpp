@@ -5,29 +5,52 @@
 // [[Rcpp::depends("BH")]]
 // [[Rcpp::plugins(cpp11)]]
 
-template <LinkageType T>
-inline void print_list(const EdgeList &theList)
-{
-    Rcout<<"+>-------------------\n";
-    for(auto itr= theList.begin(); itr != theList.end(); ++itr)
-    {
-        Rcout << itr->firstNode << "\t";
-        Rcout << itr->secondNode << "\t";
-        Rcout << itr->get_weight<T>() << "\t";
-        Rcout << itr->shadow->firstNode << "\t";
-        Rcout << itr->shadow->secondNode << "\t";
-        Rcout << itr->is_valid() << "\t";
-        Rcout<<endl;
+
+struct MapCmp {
+    double eps = 0.0001;
+    bool operator()(const pair<NodePair, double>& p1, const pair<NodePair, double>& p2) const{
+        return (p1.second < p2.second - eps) || (p1.first != p2.first);
     }
-    Rcout<<"-<-------------------\n";
-} 
+
+} mCmp;
+
+// [[Rcpp::export]]
+bool dgCIsSymmetric(Eigen::SparseMatrix<double> S, double eps){
+
+    map<NodePair, double> pool_1, pool_2;
+
+    for (int k=0; k<S.outerSize(); ++k)
+        for (SparseMatrix<double>::InnerIterator it(S,k); it; ++it){
+
+            if( it.row() == it.col()  || it.value() < eps )
+                continue;
+
+            if( it.row() > it.col() )
+                pool_1[ NodePair(it.col(), it.row()) ] = it.value();
+            else
+                pool_2[ NodePair(it.row(), it.col()) ] = it.value();
+        }
+
+    std::vector<std::pair<NodePair,double> > symDifference;
+
+    mCmp.eps = eps;
+    std::set_symmetric_difference(
+            pool_1.begin(), pool_1.end(),
+            pool_2.begin(), pool_2.end(),
+            std::back_inserter(symDifference), mCmp );
+
+    if( symDifference.size() > 0)
+        return false;
+
+    return true;
+}
+
 
 template <LinkageType T>
 bool fill_heap_and_list(SparseMatrix<double> S, const int nNodes, MyHeap &theHeap, EdgeList &theList){
 
     typedef typename EdgeList::value_type EdgeType;
     typedef typename MyHeap::value_type WeightType;
-
 
     MyItrMap itrPool;
 
@@ -44,44 +67,38 @@ bool fill_heap_and_list(SparseMatrix<double> S, const int nNodes, MyHeap &theHea
     for (; itr != theList.end(); ++itr){
         const int f = itr->firstNode, s = itr->secondNode;
 
-#ifdef DEBUG_MODE
         RASSERT( itrPool.find(NodePair(s,f)) != itrPool.end() );
         RASSERT( itrPool.find(NodePair(f,s)) != itrPool.end() );
-#endif
         if ( f < s ) //NOTE: working with undirected graphs/no selfloops
             theHeap.push( WeightType( f, s, itrPool[NodePair(f,s)], 
                         itrPool[NodePair(s,f)], itr->get_weight<T>() ) ); 
         //setting the shadow  
         itr->set_shadow( itrPool[NodePair(s,f)] );
     }
-
-#ifdef DEBUG_MODE
     //print_list<T>(theList);
-#endif
     return 0;
 }
 
 inline EdgeListItr go_to_begin(const EdgeList &theList, const EdgeListItr &refItr){
     auto itr = refItr;
-#ifdef DEBUG_MODE
+
     RASSERT(itr != theList.end());
-#endif
+
     const int u = refItr->firstNode;
     while(itr->firstNode == u && itr != theList.begin())
         --itr;
     while( itr->firstNode != u) 
         ++itr;
-#ifdef DEBUG_MODE
+
     RASSERT(u == itr->firstNode );
-#endif
     return itr;
 }
 
 inline EdgeListItr go_to_end(const EdgeList &theList, const EdgeListItr &refItr){
     auto itr = refItr;
-#ifdef DEBUG_MODE
+
     RASSERT(itr != theList.end());
-#endif
+
     const int u = refItr->firstNode;
     while(itr != theList.end() && itr->firstNode == u )
         ++itr;
@@ -90,9 +107,7 @@ inline EdgeListItr go_to_end(const EdgeList &theList, const EdgeListItr &refItr)
 
 inline void fill_hierarchy_matrix(const int hCounter, const int firstNode, const int secondNode, 
         const int newNode, const double topWeight, DoubleMatrix &h){
-#ifdef DEBUG_MODE
-    //cout <<"("<<firstNode<<","<<secondNode<<","<<topWeight<<") --> "<<newNode<<endl;
-#endif
+
     h(hCounter, 0) = firstNode;  
     h(hCounter, 1) = secondNode;
     h(hCounter, 2) = newNode;  			
@@ -102,9 +117,7 @@ inline void fill_hierarchy_matrix(const int hCounter, const int firstNode, const
 template<LinkageType T>
 int do_sparse_linkage(MyHeap &theHeap, EdgeList &theList, const int nNodes, DoubleMatrix &h){
 
-#ifdef DEBUG_MODE
     RASSERT(h.rows() == nNodes-1 && h.cols() == 4);
-#endif
 
     typedef typename EdgeList::value_type  EdgeType;
     typedef typename MyHeap::value_type  WeightType;
@@ -117,7 +130,7 @@ int do_sparse_linkage(MyHeap &theHeap, EdgeList &theList, const int nNodes, Doub
         auto fiItr = theHeap.top().edgeItr1, seItr = theHeap.top().edgeItr2;
         const int setSize = fiItr->fNNodes + fiItr->sNNodes;
 
-#ifdef DEBUG_MODE
+        //NOTE: A paranoid check of all assumptions. Undef debug_mode macro to get ride of it.
         RASSERT( fiItr->fNNodes == seItr->sNNodes );
         RASSERT( seItr->fNNodes == fiItr->sNNodes );
         RASSERT( theHeap.top().firstNode == fiItr->firstNode ||  
@@ -127,24 +140,25 @@ int do_sparse_linkage(MyHeap &theHeap, EdgeList &theList, const int nNodes, Doub
         RASSERT( fiItr->firstNode == seItr->secondNode );
         RASSERT( fiItr->secondNode == seItr->firstNode );
         RASSERT( fiItr->is_valid() && seItr->is_valid() );
-#endif
+
+
         const double topWeight = theHeap.top().weight;
         theHeap.pop(); // now discarding from the heap.
-                       // invadiating it in the list too.
+                       // invalidating it in the list too.
         fiItr->do_invalid(); 	
         seItr->do_invalid();
 
         ++newNode;
         fill_hierarchy_matrix(hCounter++, fiItr->firstNode, seItr->firstNode, newNode, topWeight, h);
-#ifdef DEBUG_MODE
+
         ///print_list<T>(theList);
-#endif
+        //
         for(int mode=0; mode<2; ++mode){ // now updating weights
 
             swap(fiItr, seItr);
             const int u=fiItr->firstNode, v=seItr->firstNode;
 
-            std::map<int, EdgeList::iterator> vNodeSet;
+            map<int, EdgeList::iterator> vNodeSet;
             if( !mode ) 
                 for(auto vItr = go_to_begin(theList, seItr); 
                         vItr != theList.end() && vItr->firstNode == v; ++vItr)
@@ -156,10 +170,10 @@ int do_sparse_linkage(MyHeap &theHeap, EdgeList &theList, const int nNodes, Doub
                 if( !(uItr->is_valid() && legal(uItr->secondNode)) )
                     continue;
                 uItr->do_invalid();
-#ifdef DEBUG_MODE
+
                 RASSERT( uItr->secondNode != u ); //no self-loop
                 RASSERT( uItr->secondNode != v ); //should not be the chosed edge
-#endif
+
                 const int neiNode  = uItr->secondNode; 
                 const auto connTie = uItr->shadow;
 
@@ -222,6 +236,7 @@ int sparse_linkage(SparseMatrix<double> S, const int nNodes, const LinkageType t
 #ifdef DEBUG_MODE
     Rcout<<"warning: running in debug mode!" <<endl;
 #endif
+
     MyHeap theHeap;
     EdgeList theList;
 
@@ -243,17 +258,18 @@ int sparse_linkage(SparseMatrix<double> S, const int nNodes, const LinkageType t
     }
 }
 
+// Finds a permutation of tips (terminal nodes) so that the tree edges do not cross in plot.hclust.
 DoubleVector order_leaves(DoubleMatrix &h, const int size){
-    std::list<int> oList;
-    std::map<int, std::list<int>::iterator> store; 
+    list<int> oList;
+
+    map<int, list<int>::iterator> store; 
 
     for(int i=size-1; i>-1; --i){
-
         if( store.find( h(i,2) ) != store.end() ){
-            auto iter    = oList.insert(store[h(i,2)], h(i,1));
-            store[h(i,1)]= iter;
-            iter    = oList.insert(store[h(i,2)], h(i,0));
-            store[h(i,0)]= iter;
+            auto iter     = oList.insert(store[h(i,2)], h(i,1));
+            store[h(i,1)] = iter;
+            iter          = oList.insert(store[h(i,2)], h(i,0));
+            store[h(i,0)] = iter;
         } else {
             oList.push_front(h(i,0));
             store[h(i,0)] = oList.begin();
@@ -262,46 +278,66 @@ DoubleVector order_leaves(DoubleMatrix &h, const int size){
         }
     }
 
-    std::vector<double> ordering;
-    ordering.reserve(size);
+    { //NOTE: If the input matrix represents a disconnected graph then at this step h 
+      // contains multiple trees which is ok theoretically. But ``hclust'' 
+      // in ``igraph'' doesn't like it and ``cutree'' ends with seg fault so here I add some
+      // entries to connect these trees.
+      
+        vector<int> rIndices;
+        for(int i=0; i<size; ++i)
+            if( store.find(h(i,2)) == store.end() )
+                rIndices.push_back(i);
+
+        //NOTE: I set the hight to zero just for now!
+        const double hight = 0;
+        if(rIndices.size() > 1){
+            int newNodes = h(size-1,2)+1, hCounter=size;
+            const auto idx1 = rIndices[0]; 
+            const auto idx2 = rIndices[1]; 
+            fill_hierarchy_matrix(hCounter++, h(idx1,2), h(idx2,2), newNodes, hight, h);
+
+            for(int i=2; i<rIndices.size(); ++i){
+                const auto idx = rIndices[i]; 
+                fill_hierarchy_matrix(hCounter++, h(idx,2), newNodes, newNodes+1, hight, h);
+                ++newNodes;
+            }
+        }
+    }
+
+    DoubleVector ordering;
+    ordering.reserve(size+1);
     for( auto iter = oList.begin(); iter != oList.end(); ++iter )
         if ( *iter < 0 )
             ordering.push_back( -1*(*iter) );
+
     return ordering;
 }
 
 // [[Rcpp::export]]
 Rcpp::List  run_sparseAHC(
         Eigen::SparseMatrix<double> S, //similarity matrix.
-        Rcpp::CharacterVector method="average",
-        bool noOrder=false //for huge input you may trun it on
+        Rcpp::CharacterVector method="average"
         ){
 
     const int m = S.cols();
     const int n = S.rows();
 
     if ( n != m)
-        throw std::range_error("input matrix must be symmetric!");
+        throw range_error("input matrix must be symmetric!");
 
     LinkageType linkageType = AVERAGE;	
-    if( Rcpp::as<std::string> (method) == "average" )
+    if( Rcpp::as<string> (method) == "average" )
         linkageType = AVERAGE;
-    else if( Rcpp::as<std::string> (method) == "single" )
+    else if( Rcpp::as<string> (method) == "single" )
         linkageType = SINGLE;
-    else if( Rcpp::as<std::string> (method) == "complete" )
+    else if( Rcpp::as<string> (method) == "complete" )
         linkageType = COMPLETE;
     else
-        throw std::range_error("undefined method [average,single,complete]!");
+        throw range_error("undefined method [average,single,complete]!");
 
     DoubleMatrix hierarchy(n-1, 4);
 
     const int hCounter = sparse_linkage(S, n, linkageType, hierarchy);
-
-
-    //clock_t begin = std::clock();
-    //clock_t end   = std::clock();
-    //double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
-    //Rcout<<elapsed_secs<<endl;
 
     //NOTE: changing hierarchy to hclust format
     for(int i=0; i<hCounter; ++i){
@@ -312,10 +348,17 @@ Rcpp::List  run_sparseAHC(
         hierarchy(i,3) = -1*hierarchy(i,3);
     }
 
-    Rcpp::List L =  Rcpp::List::create( Rcpp::Named("merge") = hierarchy.block(0, 0, hCounter, 2),
-            Rcpp::Named("height") = hierarchy.block(0, 3, hCounter, 1),
+    auto orderedTips = order_leaves(hierarchy, hCounter);
+
+    //Rcpp::List L =  Rcpp::List::create( Rcpp::Named("merge") = hierarchy.block(0, 0, hCounter, 2),
+    //        Rcpp::Named("height") = hierarchy.block(0, 3, hCounter, 1),
+    //        Rcpp::Named("method") = method,
+    //        Rcpp::Named("order")  = orderedTips
+    //        );
+    Rcpp::List L =  Rcpp::List::create( Rcpp::Named("merge") = hierarchy.block(0, 0, n-1, 2),
+            Rcpp::Named("height") = hierarchy.block(0, 3, n-1, 1),
             Rcpp::Named("method") = method,
-            Rcpp::Named("order")  = noOrder?DoubleVector():order_leaves(hierarchy, hCounter) 
+            Rcpp::Named("order")  = orderedTips
             );
     L.attr("class")= "hclust";
     return L;

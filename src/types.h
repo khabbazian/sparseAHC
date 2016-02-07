@@ -22,15 +22,27 @@
 #include <RcppEigen.h>
 
 
-//#define DEBUG_MODE
-#undef DEBUG_MODE
+#define DEBUG_MODE
+//#undef DEBUG_MODE
 
+
+#ifdef DEBUG_MODE
 #define RASSERT(condition){if(!(condition)){throw std::range_error(std::string("internal error!@")+__FILE__+":"+std::to_string((long long)__LINE__));}}
+#else
+#define RASSERT(condition){}
+#endif
+
 
 using Rcpp::Rcout;
 using std::endl;
 using std::ostream;
 using std::string;
+using std::list;
+using std::vector;
+using std::map;
+using std::range_error;
+using std::pair;
+
 using Eigen::SparseMatrix;
 
 //right now it supports the following linkage types
