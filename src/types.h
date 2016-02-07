@@ -22,8 +22,8 @@
 #include <RcppEigen.h>
 
 
-#define DEBUG_MODE
-//#undef DEBUG_MODE
+//#define DEBUG_MODE
+#undef DEBUG_MODE
 
 
 #ifdef DEBUG_MODE

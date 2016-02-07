@@ -2,20 +2,18 @@
 % Please edit documentation in R/sparseAHC.R
 \name{isSymmetric.dgCMatrix}
 \alias{isSymmetric.dgCMatrix}
-\title{Test if a Matrix of type dgCMatrix is Symmetric
-Test if a Matrix of type dgCMatrix is Symmetric}
+\title{Test if a matrix of type dgCMatrix is symmetric.}
 \usage{
 \method{isSymmetric}{dgCMatrix}(object, tol = 100 * .Machine$double.eps, ...)
 }
 \arguments{
-\item{object}{any R object; a ‘matrix’ for the matrix method.}
+\item{object}{a matrix of type dgCMatrix.}
 
 \item{tol}{numeric scalar >= 0.  Smaller differences are not considered.}
 
 \item{...}{further arguments passed to methods; the matrix method passes.}
 }
 \description{
-Test if a Matrix of type dgCMatrix is Symmetric
-Test if a Matrix of type dgCMatrix is Symmetric
+Test if a matrix of type dgCMatrix is symmetric.
 }
 

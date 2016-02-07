@@ -1,11 +1,11 @@
 Package: sparseAHC
 Type: Package
-Title: Agglomerative Hierarchical Clustering for sparse similarity matrices 
+Title: Agglomerative Hierarchical Clustering for Sparse Similarity Matrices.
 Version: 1.20
 Date: 2015-08-04
 Author: Mohammad Khabbazian
 Maintainer: Mohammad Khabbazian <khabbazian@wisc.edu>
-Description: An agglomerative hierarchical clustering implementation that accepts sparse similarity matrices. 
+Description: An implementation of the agglomerative hierarchical clustering method that accepts sparse similarity matrices. A similarity matrix can be interpreted as the adjacency matrix of a weighted undirected graph. In this graph, the edge weights represent the similarity of the two endpoints. Furthermore, absence of an edge is weak signal of similarity. This implementation builds the output dendrograms without expanding the matrix into the memory. The memory complexity is linear in terms of the number of non-zero entries in the input. 
 Depends: R (>= 2.14), BH, RcppEigen, Matrix
 URL: https://github.com/khabbazian/
 Suggests: knitr, rmarkdown

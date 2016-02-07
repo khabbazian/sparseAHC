@@ -2,7 +2,7 @@
 % Please edit documentation in R/sparseAHC.R
 \name{sparseAHC}
 \alias{sparseAHC}
-\title{agglomerative hierarchical clustering for sparse similarity matrices}
+\title{Agglomerative hierarchical clustering for sparse similarity matrices.}
 \usage{
 sparseAHC(S, linkage = c("average", "single", "complete"),
   check.symmetry = TRUE)
@@ -10,15 +10,18 @@ sparseAHC(S, linkage = c("average", "single", "complete"),
 \arguments{
 \item{S}{sparse similarity matrix of type dgCMatrix}
 
-\item{linkage}{is c(average, single, complete)}
+\item{linkage}{linkage criteria. It determines the similarity (or originally distance) between sets of nodes. See details.}
 
-\item{check.symmetry}{logical. If TRUE, checks if the input similarity matrix is symmetric.}
+\item{check.symmetry}{logical. If TRUE, tests if the input similarity matrix is symmetric.}
 }
 \value{
-hclust object
+dendrogram of type hclust
 }
 \description{
-agglomerative hierarchical clustering for sparse similarity matrices
+Agglomerative hierarchical clustering for sparse similarity matrices.
+}
+\details{
+Let A and B be two disjoint subsets of points (nodes of the graph). ``Complete linkage'' is min S(a,b) for a \\in  A and b \\in B, ``single linkage'' is max S(a,b) for a \\in  A and b \\in B and ``Average linkage'' is 1/(|A|.|B|) * sum_\{a \\in A\} sum_\{b \\in B\} S(a,b).
 }
 \examples{
 library("Matrix")
@@ -30,7 +33,7 @@ A[3,4] <- 2; A[3,5] <- 6; A[4,5] <- 5; A[5,6] <- 4.6
 A <- A + t(A)
 
 G <- graph.adjacency(A, mode = "undirected", weighted=TRUE)
-plot(G,edge.label=E(G)$weight,vertex.label=V(G)-1)
+plot(G, edge.label=E(G)$weight, vertex.label=V(G)-1)
 
 H <- sparseAHC(A, "average", TRUE)
 plot(H)

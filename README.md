@@ -1,12 +1,20 @@
-Install using the devtools package.
+
+An implementation of the agglomerative hierarchical clustering method that accepts sparse similarity matrices. 
+A similarity matrix can be interpreted as the adjacency matrix of a weighted undirected graph. 
+In this graph, the edge weights represent the similarity of the two endpoints. 
+Furthermore, absence of an edge is weak signal of similarity. 
+This implementation builds the output dendrograms without expanding the matrix into the memory. 
+The memory complexity is linear in terms of the number of non-zero entries in the input. 
+
+[SparseAHC Manual](http://homepages.cae.wisc.edu/~khabbazian/pdfs/sparseAHC.pdf)
+
+### Install using the devtools package.
 ```
 install.packages("devtools")
 require(devtools)
 install_github("khabbazian/sparseAHC")
 require(sparseAHC)
 ```
-
-[SparseAHC Manual](http://homepages.cae.wisc.edu/~khabbazian/pdfs/sparseAHC.pdf)
 
 ### License
 

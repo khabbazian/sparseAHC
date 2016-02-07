@@ -1,10 +1,14 @@
-#' agglomerative hierarchical clustering for sparse similarity matrices
+#' Agglomerative hierarchical clustering for sparse similarity matrices.
+#'
+#' 
 #'
 #'@param S sparse similarity matrix of type dgCMatrix
-#'@param linkage is c(average, single, complete) 
-#'@param check.symmetry logical. If TRUE, checks if the input similarity matrix is symmetric. 
+#'@param linkage linkage criteria. It determines the similarity (or originally distance) between sets of nodes. See details. 
+#'@param check.symmetry logical. If TRUE, tests if the input similarity matrix is symmetric. 
 #'
-#'@return hclust object
+#'@return dendrogram of type hclust
+#'
+#'@details Let A and B be two disjoint subsets of points (nodes of the graph). ``Complete linkage'' is min S(a,b) for a \\in  A and b \\in B, ``single linkage'' is max S(a,b) for a \\in  A and b \\in B and ``Average linkage'' is 1/(|A|.|B|) * sum_\{a \\in A\} sum_\{b \\in B\} S(a,b). 
 #'
 #'@examples
 #'library("Matrix")
@@ -16,7 +20,7 @@
 #'A <- A + t(A)
 #'
 #'G <- graph.adjacency(A, mode = "undirected", weighted=TRUE)
-#'plot(G,edge.label=E(G)$weight,vertex.label=V(G)-1)
+#'plot(G, edge.label=E(G)$weight, vertex.label=V(G)-1)
 #'
 #'H <- sparseAHC(A, "average", TRUE)
 #'plot(H)
@@ -40,10 +44,9 @@ sparseAHC <- function(S, linkage=c("average", "single", "complete"), check.symme
     .Call('sparseAHC_run_sparseAHC', PACKAGE = 'sparseAHC', S, linkage)
 }
 
-#'Test if a Matrix of type dgCMatrix is Symmetric
-#'Test if a Matrix of type dgCMatrix is Symmetric
+#' Test if a matrix of type dgCMatrix is symmetric.
 #'
-#'@param object any R object; a ‘matrix’ for the matrix method.
+#'@param object a matrix of type dgCMatrix.
 #'@param tol numeric scalar >= 0.  Smaller differences are not considered.
 #'@param ... further arguments passed to methods; the matrix method passes.
 #'
